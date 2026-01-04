@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Gantt - Suivi de Chantier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1e40af;
+            --success: #10b981;
+            --warning: #f97316;
+            --danger: #ef4444;
+            --secondary: #8b5cf6;
+            --pink: #ec4899;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --completed: #10b981;
+            --in-progress: #3b82f6;
+            --pending: #cbd5e1;
+            --phase1: #f97316;
+            --phase2: #3b82f6;
+            --phase3: #8b5cf6;
+            --phase4: #ec4899;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-metrics {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content */
+        .content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left Panel - Task List */
+        .task-panel {
+            width: 350px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .task-list {
+            padding: 15px;
+        }
+
+        .task-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: var(--bg);
+            border-left: 4px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            user-select: none;
+        }
+
+        .task-item:hover {
+            background: #f0f9ff;
+            border-left-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .task-item.phase {
+            border-left-width: 6px;
+            font-weight: 600;
+            padding: 14px;
+        }
+
+        .task-item.phase-1 {
+            border-left-color: var(--phase1);
+        }
+
+        .task-item.phase-2 {
+            border-left-color: var(--phase2);
+        }
+
+        .task-item.phase-3 {
+            border-left-color: var(--phase3);
+        }
+
+        .task-item.phase-4 {
+            border-left-color: var(--phase4);
+        }
+
+        .task-name {
+            font-size: 14px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-toggle {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .task-progress {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .task-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .task-item.completed .task-progress-bar {
+            background: var(--completed);
+        }
+
+        .task-item.in-progress .task-progress-bar {
+            background: var(--in-progress);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--completed);
+        }
+
+        .status-in-progress {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--in-progress);
+        }
+
+        .status-pending {
+            background: rgba(203, 213, 225, 0.4);
+            color: #475569;
+        }
+
+        .subtask-item {
+            margin-left: 20px;
+            padding: 10px;
+            border-left: 3px solid var(--border);
+            font-size: 13px;
+            display: none;
+        }
+
+        .subtask-item.visible {
+            display: block;
+        }
+
+        /* Right Panel - Gantt Chart */
+        .gantt-panel {
+            flex: 1;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .gantt-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gantt-header h3 {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .gantt-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .control-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .gantt-content {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            position: relative;
+        }
+
+        .gantt-container {
+            display: flex;
+            height: 100%;
+        }
+
+        .timeline-header {
+            display: flex;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .timeline-month {
+            flex-shrink: 0;
+            width: 120px;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            border-right: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .timeline-weeks {
+            flex-shrink: 0;
+            width: 120px;
+            display: flex;
+            border-right: 1px solid var(--border);
+        }
+
+        .timeline-week {
+            flex: 1;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            border-right: 1px solid var(--border);
+        }
+
+        .gantt-rows {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .gantt-row {
+            display: flex;
+            height: 45px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            background: var(--surface);
+            transition: background 0.2s;
+        }
+
+        .gantt-row:hover {
+            background: #f8f9fb;
+        }
+
+        .gantt-row-label {
+            width: 350px;
+            flex-shrink: 0;
+            padding: 0 20px;
+            font-size: 13px;
+            font-weight: 500;
+            border-right: 1px solid var(--border);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+        }
+
+        .gantt-row-content {
+            flex: 1;
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .task-bar {
+            position: absolute;
+            height: 28px;
+            border-radius: 4px;
+            cursor: grab;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .task-bar:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .task-bar.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+            z-index: 20;
+        }
+
+        .task-bar::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            cursor: col-resize;
+            background: rgba(255, 255, 255, 0.3);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .task-bar:hover::after {
+            opacity: 1;
+        }
+
+        .task-bar.completed {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        }
+
+        .task-bar.in-progress {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+
+        .task-bar.pending {
+            background: linear-gradient(135deg, #94a3b8 0%, #cbd5e1 100%);
+        }
+
+        .task-bar-text {
+            padding: 0 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .milestone {
+            width: 16px;
+            height: 16px;
+            background: var(--danger);
+            border-radius: 2px;
+            transform: rotate(45deg);
+            position: absolute;
+            top: 50%;
+            margin-top: -8px;
+        }
+
+        .today-line {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: rgba(239, 68, 68, 0.5);
+            top: 0;
+            z-index: 3;
+            border-left: 1px dashed var(--danger);
+        }
+
+        .dependency-line {
+            position: absolute;
+            height: 1px;
+            background: var(--border);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg);
+            padding: 15px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+        }
+
+        .legend-box.completed {
+            background: var(--completed);
+        }
+
+        .legend-box.in-progress {
+            background: var(--in-progress);
+        }
+
+        .legend-box.pending {
+            background: var(--pending);
+        }
+
+        /* Tooltips */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 100;
+            pointer-events: none;
+            white-space: nowrap;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            display: none;
+        }
+
+        .task-bar:hover .tooltip {
+            display: block;
+        }
+
+        /* Scrollbar styling */
+        .task-panel::-webkit-scrollbar,
+        .gantt-content::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .task-panel::-webkit-scrollbar-track,
+        .gantt-content::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        .task-panel::-webkit-scrollbar-thumb,
+        .gantt-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .task-panel::-webkit-scrollbar-thumb:hover,
+        .gantt-content::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .task-panel {
+                width: 200px;
+            }
+
+            .gantt-row-label {
+                width: 200px;
+            }
+
+            .header-metrics {
+                gap: 15px;
+            }
+
+            .metric-value {
+                font-size: 18px;
+            }
+        }
+
+        .subtask-item.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>📊 Dashboard Gantt - Suivi de Chantier</h1>
+                <div class="header-metrics">
+                    <div class="metric">
+                        <span class="metric-value" id="projectName">Renovation Villa Dupont</span>
+                        <span class="metric-label">Projet</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value" id="progressValue">72%</span>
+                        <span class="metric-label">Progression</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value" id="budgetStatus">75%</span>
+                        <span class="metric-label">Budget Utilisé</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Left Panel -->
+            <div class="task-panel">
+                <div class="task-list" id="taskList"></div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="gantt-panel">
+                <div class="gantt-header">
+                    <h3>Diagramme de Gantt</h3>
+                    <div class="gantt-controls">
+                        <button class="control-btn" onclick="zoomOut()">− Zoom</button>
+                        <button class="control-btn" onclick="resetZoom()">Réinitialiser</button>
+                        <button class="control-btn" onclick="zoomIn()">+ Zoom</button>
+                    </div>
+                </div>
+                <div class="gantt-content">
+                    <div class="gantt-container">
+                        <div id="ganttChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box completed"></div>
+                    <span>Complétée</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box in-progress"></div>
+                    <span>En cours</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box pending"></div>
+                    <span>En attente</span>
+                </div>
+            </div>
+            <div>Gantt Dashboard v1.0 | Développé pour la gestion de chantiers</div>
+        </div>
+    </div>
+
+    <script>
+        let projectData = {};
+        let zoomLevel = 1;
+        const cellWidth = 30; // px per day
+
+        // Load data
+        async function loadData() {
+            try {
+                const response = await fetch('gantt-data.json');
+                projectData = await response.json();
+                render();
+            } catch (e) {
+                console.log('Utilisation des données d\'exemple');
+                projectData = getDefaultData();
+                render();
+            }
+        }
+
+        function getDefaultData() {
+            return {
+                "project": {
+                    "name": "Renovation Résidentielle - Villa Dupont",
+                    "client": "M. et Mme Dupont",
+                    "location": "Rennes, Ille-et-Vilaine",
+                    "startDate": "2024-01-15",
+                    "endDate": "2024-06-30",
+                    "budget": 250000,
+                    "budgetUsed": 187500,
+                    "progress": 72
+                },
+                "tasks": [
+                    {
+                        "id": 1, "name": "Phase 1 : Préparation du chantier", "type": "phase",
+                        "startDate": "2024-01-15", "endDate": "2024-01-31",
+                        "progress": 100, "status": "completed", "color": "#10b981",
+                        "dependencies": [], "assignee": "Chef de chantier",
+                        "subtasks": [
+                            {"id": 1.1, "name": "Obtention des permis", "startDate": "2024-01-15", "endDate": "2024-01-20", "progress": 100, "status": "completed"},
+                            {"id": 1.2, "name": "Préparation et sécurisation", "startDate": "2024-01-20", "endDate": "2024-01-31", "progress": 100, "status": "completed"}
+                        ]
+                    },
+                    {
+                        "id": 2, "name": "Phase 2 : Démolition et gros œuvre", "type": "phase",
+                        "startDate": "2024-02-01", "endDate": "2024-03-15",
+                        "progress": 100, "status": "completed", "color": "#f97316",
+                        "dependencies": [1], "assignee": "Équipe démolition",
+                        "subtasks": [
+                            {"id": 2.1, "name": "Démolition cloisons", "startDate": "2024-02-01", "endDate": "2024-02-10", "progress": 100, "status": "completed"},
+                            {"id": 2.2, "name": "Consolidation structure", "startDate": "2024-02-10", "endDate": "2024-02-25", "progress": 100, "status": "completed"},
+                            {"id": 2.3, "name": "Nouvelles fondations", "startDate": "2024-02-25", "endDate": "2024-03-15", "progress": 100, "status": "completed"}
+                        ]
+                    },
+                    {
+                        "id": 3, "name": "Phase 3 : Électricité et plomberie", "type": "phase",
+                        "startDate": "2024-03-16", "endDate": "2024-04-15",
+                        "progress": 85, "status": "in-progress", "color": "#3b82f6",
+                        "dependencies": [2], "assignee": "Équipe MEP",
+                        "subtasks": [
+                            {"id": 3.1, "name": "Installation électriques", "startDate": "2024-03-16", "endDate": "2024-03-30", "progress": 100, "status": "completed"},
+                            {"id": 3.2, "name": "Installation plomberie", "startDate": "2024-03-20", "endDate": "2024-04-10", "progress": 70, "status": "in-progress"},
+                            {"id": 3.3, "name": "Tests de conformité", "startDate": "2024-04-10", "endDate": "2024-04-15", "progress": 0, "status": "pending"}
+                        ]
+                    },
+                    {
+                        "id": 4, "name": "Phase 4 : Finitions", "type": "phase",
+                        "startDate": "2024-04-16", "endDate": "2024-06-15",
+                        "progress": 45, "status": "in-progress", "color": "#8b5cf6",
+                        "dependencies": [3], "assignee": "Équipe finitions",
+                        "subtasks": [
+                            {"id": 4.1, "name": "Pose isolation thermique", "startDate": "2024-04-16", "endDate": "2024-05-05", "progress": 100, "status": "completed"},
+                            {"id": 4.2, "name": "Cloisons et isolation", "startDate": "2024-05-05", "endDate": "2024-05-25", "progress": 80, "status": "in-progress"},
+                            {"id": 4.3, "name": "Peinture et revêtements", "startDate": "2024-05-20", "endDate": "2024-06-10", "progress": 20, "status": "in-progress"}
+                        ]
+                    },
+                    {
+                        "id": 5, "name": "Phase 5 : Agencement et livraison", "type": "phase",
+                        "startDate": "2024-06-10", "endDate": "2024-06-30",
+                        "progress": 0, "status": "pending", "color": "#ec4899",
+                        "dependencies": [4], "assignee": "Équipe agencement",
+                        "subtasks": [
+                            {"id": 5.1, "name": "Installation cuisine", "startDate": "2024-06-10", "endDate": "2024-06-18", "progress": 0, "status": "pending"},
+                            {"id": 5.2, "name": "Installation salles de bain", "startDate": "2024-06-15", "endDate": "2024-06-25", "progress": 0, "status": "pending"},
+                            {"id": 5.3, "name": "Inspection et nettoyage", "startDate": "2024-06-25", "endDate": "2024-06-30", "progress": 0, "status": "pending"}
+                        ]
+                    }
+                ]
+            };
+        }
+
+        function render() {
+            renderHeader();
+            renderTaskList();
+            renderGantt();
+        }
+
+        function renderHeader() {
+            document.getElementById('projectName').textContent = projectData.project.name;
+            document.getElementById('progressValue').textContent = projectData.project.progress + '%';
+            const budgetPercent = Math.round((projectData.project.budgetUsed / projectData.project.budget) * 100);
+            document.getElementById('budgetStatus').textContent = budgetPercent + '%';
+        }
+
+        function renderTaskList() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            projectData.tasks.forEach((task, index) => {
+                const taskEl = document.createElement('div');
+                const phaseClass = `phase-${index + 1}`;
+                taskEl.className = `task-item phase ${task.status} ${phaseClass}`;
+                taskEl.innerHTML = `
+                    <div class="task-name">
+                        <span class="task-toggle" onclick="toggleSubtasks(this)">▼</span>
+                        ${task.name}
+                    </div>
+                    <div class="task-meta">
+                        <span>${new Date(task.startDate).toLocaleDateString('fr-FR')}</span>
+                        <span class="status-badge status-${task.status}">${task.status}</span>
+                    </div>
+                    <div class="task-progress">
+                        <div class="task-progress-bar" style="width: ${task.progress}%"></div>
+                    </div>
+                `;
+                taskList.appendChild(taskEl);
+
+                if (task.subtasks) {
+                    task.subtasks.forEach(subtask => {
+                        const subEl = document.createElement('div');
+                        subEl.className = `subtask-item ${task.status} visible`;
+                        subEl.innerHTML = `
+                            <div class="task-name" style="margin: 0;">
+                                • ${subtask.name}
+                            </div>
+                            <div class="task-meta">
+                                <span>${new Date(subtask.startDate).toLocaleDateString('fr-FR')}</span>
+                                <span>${subtask.progress}%</span>
+                            </div>
+                        `;
+                        taskList.appendChild(subEl);
+                    });
+                }
+            });
+        }
+
+        function toggleSubtasks(el) {
+            const taskItem = el.closest('.task-item');
+            const subtasks = Array.from(taskItem.parentElement.children).slice(
+                Array.from(taskItem.parentElement.children).indexOf(taskItem) + 1
+            );
+
+            subtasks.forEach(st => {
+                if (st.classList.contains('subtask-item')) {
+                    st.classList.toggle('hidden');
+                }
+            });
+
+            el.textContent = el.textContent === '▼' ? '▶' : '▼';
+        }
+
+        function renderGantt() {
+            const gantt = document.getElementById('ganttChart');
+            gantt.innerHTML = '';
+
+            const startDate = new Date(projectData.project.startDate);
+            const endDate = new Date(projectData.project.endDate);
+            const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+            // Create header
+            const header = document.createElement('div');
+            header.className = 'timeline-header';
+            header.style.width = (totalDays * cellWidth * zoomLevel + 350) + 'px';
+
+            for (let i = 0; i < totalDays; i += 30) {
+                const date = new Date(startDate);
+                date.setDate(date.getDate() + i);
+                const monthHeader = document.createElement('div');
+                monthHeader.className = 'timeline-month';
+                monthHeader.style.width = (30 * cellWidth * zoomLevel) + 'px';
+                monthHeader.textContent = date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+                header.appendChild(monthHeader);
+            }
+
+            gantt.appendChild(header);
+
+            // Create rows
+            const rows = document.createElement('div');
+            rows.className = 'gantt-rows';
+
+            projectData.tasks.forEach((task, index) => {
+                createTaskRow(rows, task, startDate, totalDays, index);
+
+                if (task.subtasks) {
+                    task.subtasks.forEach(subtask => {
+                        createTaskRow(rows, subtask, startDate, totalDays, index, true);
+                    });
+                }
+            });
+
+            gantt.appendChild(rows);
+        }
+
+        function createTaskRow(container, task, startDate, totalDays, phaseIndex, isSubtask = false) {
+            const row = document.createElement('div');
+            row.className = 'gantt-row';
+
+            const label = document.createElement('div');
+            label.className = 'gantt-row-label';
+            label.textContent = isSubtask ? '  └─ ' + task.name : task.name;
+            label.style.paddingLeft = isSubtask ? '40px' : '20px';
+            row.appendChild(label);
+
+            const content = document.createElement('div');
+            content.className = 'gantt-row-content';
+
+            const taskStart = new Date(task.startDate);
+            const taskEnd = new Date(task.endDate);
+            const startOffset = Math.max(0, (taskStart - startDate) / (1000 * 60 * 60 * 24));
+            const duration = Math.max(1, (taskEnd - taskStart) / (1000 * 60 * 60 * 24));
+
+            const bar = document.createElement('div');
+            bar.className = `task-bar ${task.status}`;
+            bar.style.left = (startOffset * cellWidth * zoomLevel) + 'px';
+            bar.style.width = (duration * cellWidth * zoomLevel) + 'px';
+            bar.innerHTML = `
+                <span class="task-bar-text">${Math.round(task.progress)}%</span>
+                <div class="tooltip">${task.name} (${task.progress}%)</div>
+            `;
+
+            // Drag functionality
+            let isDragging = false;
+            let startX = 0;
+            let originalLeft = 0;
+
+            bar.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.tooltip')) return;
+                isDragging = true;
+                startX = e.clientX;
+                originalLeft = bar.offsetLeft;
+                bar.classList.add('dragging');
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const delta = e.clientX - startX;
+                bar.style.left = (originalLeft + delta) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    bar.classList.remove('dragging');
+                    updateTaskDate(task, bar, startDate);
+                }
+            });
+
+            content.appendChild(bar);
+            row.appendChild(content);
+            container.appendChild(row);
+        }
+
+        function updateTaskDate(task, bar, startDate) {
+            const newDays = Math.round(bar.offsetLeft / (cellWidth * zoomLevel));
+            const newDate = new Date(startDate);
+            newDate.setDate(newDate.getDate() + newDays);
+            task.startDate = newDate.toISOString().split('T')[0];
+        }
+
+        function zoomIn() {
+            zoomLevel *= 1.2;
+            renderGantt();
+        }
+
+        function zoomOut() {
+            zoomLevel /= 1.2;
+            renderGantt();
+        }
+
+        function resetZoom() {
+            zoomLevel = 1;
+            renderGantt();
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>

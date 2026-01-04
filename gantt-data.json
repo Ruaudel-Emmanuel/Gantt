@@ -1,0 +1,254 @@
+{
+  "project": {
+    "name": "Renovation Résidentielle - Villa Dupont",
+    "client": "M. et Mme Dupont",
+    "location": "Rennes, Ille-et-Vilaine",
+    "startDate": "2024-01-15",
+    "endDate": "2024-06-30",
+    "budget": 250000,
+    "budgetUsed": 187500,
+    "progress": 72
+  },
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Phase 1 : Préparation du chantier",
+      "type": "phase",
+      "startDate": "2024-01-15",
+      "endDate": "2024-01-31",
+      "progress": 100,
+      "status": "completed",
+      "color": "#10b981",
+      "dependencies": [],
+      "assignee": "Chef de chantier",
+      "subtasks": [
+        {
+          "id": 1.1,
+          "name": "Obtention des permis",
+          "startDate": "2024-01-15",
+          "endDate": "2024-01-20",
+          "progress": 100,
+          "status": "completed"
+        },
+        {
+          "id": 1.2,
+          "name": "Préparation et sécurisation",
+          "startDate": "2024-01-20",
+          "endDate": "2024-01-31",
+          "progress": 100,
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Phase 2 : Démolition et gros œuvre",
+      "type": "phase",
+      "startDate": "2024-02-01",
+      "endDate": "2024-03-15",
+      "progress": 100,
+      "status": "completed",
+      "color": "#f97316",
+      "dependencies": [1],
+      "assignee": "Équipe démolition",
+      "subtasks": [
+        {
+          "id": 2.1,
+          "name": "Démolition cloisons intérieures",
+          "startDate": "2024-02-01",
+          "endDate": "2024-02-10",
+          "progress": 100,
+          "status": "completed"
+        },
+        {
+          "id": 2.2,
+          "name": "Consolidation structure",
+          "startDate": "2024-02-10",
+          "endDate": "2024-02-25",
+          "progress": 100,
+          "status": "completed"
+        },
+        {
+          "id": 2.3,
+          "name": "Mise en place nouvelles fondations",
+          "startDate": "2024-02-25",
+          "endDate": "2024-03-15",
+          "progress": 100,
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Phase 3 : Électricité et plomberie",
+      "type": "phase",
+      "startDate": "2024-03-16",
+      "endDate": "2024-04-15",
+      "progress": 85,
+      "status": "in-progress",
+      "color": "#3b82f6",
+      "dependencies": [2],
+      "assignee": "Équipe MEP",
+      "subtasks": [
+        {
+          "id": 3.1,
+          "name": "Installation réseaux électriques",
+          "startDate": "2024-03-16",
+          "endDate": "2024-03-30",
+          "progress": 100,
+          "status": "completed"
+        },
+        {
+          "id": 3.2,
+          "name": "Installation plomberie",
+          "startDate": "2024-03-20",
+          "endDate": "2024-04-10",
+          "progress": 70,
+          "status": "in-progress"
+        },
+        {
+          "id": 3.3,
+          "name": "Tests de conformité",
+          "startDate": "2024-04-10",
+          "endDate": "2024-04-15",
+          "progress": 0,
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Phase 4 : Finitions",
+      "type": "phase",
+      "startDate": "2024-04-16",
+      "endDate": "2024-06-15",
+      "progress": 45,
+      "status": "in-progress",
+      "color": "#8b5cf6",
+      "dependencies": [3],
+      "assignee": "Équipe finitions",
+      "subtasks": [
+        {
+          "id": 4.1,
+          "name": "Pose isolation thermique",
+          "startDate": "2024-04-16",
+          "endDate": "2024-05-05",
+          "progress": 100,
+          "status": "completed"
+        },
+        {
+          "id": 4.2,
+          "name": "Cloisons et isolation phonique",
+          "startDate": "2024-05-05",
+          "endDate": "2024-05-25",
+          "progress": 80,
+          "status": "in-progress"
+        },
+        {
+          "id": 4.3,
+          "name": "Peinture et revêtements",
+          "startDate": "2024-05-20",
+          "endDate": "2024-06-10",
+          "progress": 20,
+          "status": "in-progress"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Phase 5 : Agencement et livraison",
+      "type": "phase",
+      "startDate": "2024-06-10",
+      "endDate": "2024-06-30",
+      "progress": 0,
+      "status": "pending",
+      "color": "#ec4899",
+      "dependencies": [4],
+      "assignee": "Équipe agencement",
+      "subtasks": [
+        {
+          "id": 5.1,
+          "name": "Installation cuisine équipée",
+          "startDate": "2024-06-10",
+          "endDate": "2024-06-18",
+          "progress": 0,
+          "status": "pending"
+        },
+        {
+          "id": 5.2,
+          "name": "Installation salles de bain",
+          "startDate": "2024-06-15",
+          "endDate": "2024-06-25",
+          "progress": 0,
+          "status": "pending"
+        },
+        {
+          "id": 5.3,
+          "name": "Inspection finale et nettoyage",
+          "startDate": "2024-06-25",
+          "endDate": "2024-06-30",
+          "progress": 0,
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "id": "m1",
+      "name": "Début chantier",
+      "date": "2024-01-15",
+      "type": "start"
+    },
+    {
+      "id": "m2",
+      "name": "Gros œuvre terminé",
+      "date": "2024-03-15",
+      "type": "milestone"
+    },
+    {
+      "id": "m3",
+      "name": "MEP validée",
+      "date": "2024-04-15",
+      "type": "milestone"
+    },
+    {
+      "id": "m4",
+      "name": "Livraison",
+      "date": "2024-06-30",
+      "type": "delivery"
+    }
+  ],
+  "resources": [
+    {
+      "id": "r1",
+      "name": "Chef de chantier",
+      "role": "Manager",
+      "availability": 100
+    },
+    {
+      "id": "r2",
+      "name": "Équipe démolition",
+      "role": "Workers",
+      "availability": 85
+    },
+    {
+      "id": "r3",
+      "name": "Équipe MEP",
+      "role": "Technicians",
+      "availability": 90
+    },
+    {
+      "id": "r4",
+      "name": "Équipe finitions",
+      "role": "Craftsmen",
+      "availability": 75
+    },
+    {
+      "id": "r5",
+      "name": "Équipe agencement",
+      "role": "Installers",
+      "availability": 80
+    }
+  ]
+}
