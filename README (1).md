@@ -8,7 +8,7 @@ A professional, interactive Gantt chart dashboard for construction project manag
 - Drag-and-drop task rescheduling
 - Real-time progress tracking
 - Task dependencies visualization
-- Hierarchical task structure with expandable phases
+- Hierarchical task structure 
 
 📊 **Project Overview**
 - Real-time progress tracking
